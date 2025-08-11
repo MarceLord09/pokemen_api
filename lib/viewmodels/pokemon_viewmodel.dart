@@ -1,30 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:pokemen_api/core/services/http_service.dart';
-import 'package:pokemen_api/models/pokemon.dart';
+
 import 'package:pokemen_api/repositories/pokemon_repository.dart';
+import 'package:pokemen_api/viewmodels/pokemon_state.dart';
 
 class PokemonViewmodel extends ChangeNotifier {
   final PokemonRepository _pokemonRepository = PokemonRepository(HttpService());
-  Pokemon _pokemon = Pokemon();
-  bool _isLoading = false;
-  String _error = "";
+  PokemonState _state = PokemonState();
 
-  Pokemon get pokemon => _pokemon;
-  bool get isLoading => _isLoading;
-  String get error => _error;
+  PokemonState get state => _state;
 
   Future<void> fetchPokemon(String name) async {
-    _isLoading = true;
-    _error = "";
+    _state = _state.copyWith(
+      status: LoadStatus.loading,
+      error: "",
+      pokemon: null,
+    );
     notifyListeners();
 
     try {
       final pokemon = await _pokemonRepository.getPokemon(name);
-      _pokemon = pokemon ?? Pokemon();
+      _state = _state.copyWith(status: LoadStatus.success, pokemon: pokemon);
     } catch (e) {
-      _error = e.toString();
+      _state = _state.copyWith(status: LoadStatus.error, error: e.toString());
     } finally {
-      _isLoading = false;
       notifyListeners();
     }
   }

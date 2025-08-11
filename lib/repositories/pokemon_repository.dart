@@ -1,5 +1,3 @@
-// https://pokeapi.co/api/v2/pokemon/pikachu
-
 import 'dart:convert';
 
 import 'package:pokemen_api/core/services/http_service.dart' show HttpService;
@@ -11,10 +9,8 @@ class PokemonRepository {
   PokemonRepository(this.httpService);
 
   Future<Pokemon?> getPokemon(String name) async {
-    final response = await httpService.get(
-      'https://pokeapi.co/api/v2/pokemon/$name',
-    );
-    print('Response status: ${response.statusCode}');
+    final response = await httpService.get('pokemon/$name');
+
     if (response.statusCode == 200) {
       final pokemon = Pokemon.fromJson(jsonDecode(response.body));
       return pokemon;

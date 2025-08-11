@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:pokemen_api/viewmodels/pokemon_state.dart';
 import 'package:pokemen_api/viewmodels/pokemon_viewmodel.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   runApp(const MainApp());
 }
 
@@ -55,32 +59,52 @@ class _PokemonViewScreenState extends State<PokemonViewScreen> {
                 },
                 child: const Text('Buscar'),
               ),
-              if (viewmodel.isLoading)
-                const CircularProgressIndicator()
-              else if (viewmodel.error.isNotEmpty)
-                Column(
-                  spacing: 15,
-                  children: [
-                    Icon(Icons.not_listed_location_sharp, size: 90),
-                    Text('No encontramos el pokemon'),
-                  ],
-                )
-              else if (viewmodel.pokemon.name != null)
-                Column(
-                  children: [
-                    Text(
-                      '${viewmodel.pokemon.name}',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Image.network(
-                      viewmodel.pokemon.sprites?.frontdefault ?? '',
-                      scale: 0.5,
-                    ),
-                  ],
-                ),
+              Consumer<PokemonViewmodel>(
+                builder: (context, viewmodel, child) {
+                  final pokemon = viewmodel.state.pokemon;
+                  final status = viewmodel.state;
+
+                  switch (status.status) {
+                    case LoadStatus.initial:
+                      return const Text('Ingresa un Pokémon para comenzar.');
+                    case LoadStatus.loading:
+                      return const CircularProgressIndicator();
+                    case LoadStatus.success:
+                      if (pokemon != null) {
+                        return Column(
+                          children: [
+                            Text(
+                              '${pokemon.name ?? ""}',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            if (pokemon.sprites?.frontdefault != null)
+                              Image.network(
+                                pokemon.sprites!.frontdefault,
+                                scale: 0.5,
+                              ),
+                          ],
+                        );
+                      } else {
+                        return Column(
+                          children: [
+                            Icon(Icons.error, color: Colors.red, size: 48),
+                            Text(viewmodel.state.error),
+                          ],
+                        );
+                      }
+                    case LoadStatus.error:
+                      return Column(
+                        children: [
+                          Icon(Icons.error, color: Colors.red, size: 48),
+                          Text(status.error),
+                        ],
+                      );
+                  }
+                },
+              ),
             ],
           ),
         ),

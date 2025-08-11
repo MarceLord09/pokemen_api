@@ -3,11 +3,11 @@ class Pokemon {
   final String? name;
   final int? baseExperience;
   final int? height;
-  final bool isDefault;
+  final bool? isDefault;
   final PokemonSprites? sprites;
 
   Pokemon({
-    this.isDefault = false,
+    this.isDefault,
     this.sprites,
     this.id,
     this.name,
@@ -17,14 +17,14 @@ class Pokemon {
 
   factory Pokemon.fromJson(Map<String, dynamic> json) {
     return Pokemon(
-      isDefault: json['is_default'] as bool,
+      isDefault: json['is_default'],
       sprites: json['sprites'] != null
           ? PokemonSprites.fromJson(json['sprites'] as Map<String, dynamic>)
           : null,
-      id: json['id'] as int,
-      name: json['name'] as String,
-      baseExperience: json['base_experience'] as int,
-      height: json['height'] as int,
+      id: json['id'],
+      name: json['name'],
+      baseExperience: json['base_experience'],
+      height: json['height'],
     );
   }
 }
